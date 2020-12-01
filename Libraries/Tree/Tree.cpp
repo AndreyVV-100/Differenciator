@@ -1,5 +1,12 @@
 #include "Tree.h"
 
+// Types Names
+const char* NUM_NAME  = "Number";
+const char* OPER_NAME = "Operator";
+const char* VAR_NAME  = "Variable";
+const char* NIL_NAME  = "Not determined";
+const char* ERR_NAME  = "Error!";
+
 void TreeConstructor (Tree* tree)
 {
     assert (tree);
@@ -87,7 +94,7 @@ void CreateDump (Tree* tree)
 {
     assert (tree);
 
-    FILE* graph = fopen ("Graph/out1251.dot", "w");
+    FILE* graph = fopen ("Graph/out.dot", "w");
     assert (graph);
     fprintf (graph, "digraph G{\n" "rankdir = HR;\n node[shape=box];\n");
 
@@ -95,18 +102,17 @@ void CreateDump (Tree* tree)
 
     if (tree->head)
     {
-        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %lf\"",
-                 tree->head->type, tree->head->symb, tree->head->num);
+        fprintf (graph, "\"Point: %p\\n %s\\n Symb: %c\\n Num: %lf\";\n",
+                 tree->head, TypeCheck (tree->head->type), tree->head->symb, tree->head->num);
         ElementDump (graph, tree->head);
     }
     else
-        fprintf (graph, "Нет элементов;\n");
+        fprintf (graph, "\"No elements\";\n");
 
     fprintf (graph, "}");
     fclose (graph);
 
-    system ("win_iconv -f 1251 -t UTF8 \"Graph\\out1251.dot\" > \"Graph\\outUTF.dot\"");
-    system ("dot -Tpng Graph\\outUTF.dot -o Graph\\gr.png");
+    system ("dot -Tpng Graph\\out.dot -o Graph\\gr.png");
     system ("start Graph\\gr.png");
 
     return;
@@ -119,10 +125,10 @@ int ElementDump (FILE* graph, element* el)
 
     if (el->left)
     {
-        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %lf\" ->"
-                        "\"Type: %d\\n Symb: %c\\n Num: %lf\" [label = \"нет\"]\n;",
-                       el->type,       el->symb,       el->num, 
-                 el->left->type, el->left->symb, el->left->num);
+        fprintf (graph, "\"Point: %p\\n %s\\n Symb: %c\\n Num: %lf\" -> "
+                        "\"Point: %p\\n %s\\n Symb: %c\\n Num: %lf\";\n",
+                       el,       TypeCheck (el->type),       el->symb,       el->num, 
+                 el->left, TypeCheck (el->left->type), el->left->symb, el->left->num);
 
         if (ElementDump (graph, el->left))
             return 1;
@@ -130,14 +136,26 @@ int ElementDump (FILE* graph, element* el)
 
     if (el->right)
     {
-        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %lf\" ->"
-                        "\"Type: %d\\n Symb: %c\\n Num: %lf\" [label = \"нет\"]\n;",
-                        el->type,        el->symb,        el->num, 
-                 el->right->type, el->right->symb, el->right->num);
+        fprintf (graph, "\"Point: %p\\n %s\\n Symb: %c\\n Num: %lf\" -> "
+                        "\"Point: %p\\n %s\\n Symb: %c\\n Num: %lf\";\n",
+                        el,        TypeCheck (el->type),        el->symb,        el->num, 
+                 el->right, TypeCheck (el->right->type), el->right->symb, el->right->num);
 
         if (ElementDump (graph, el->right))
             return 1;
     }
 
     return 0;
+}
+
+const char* TypeCheck (Types type)
+{
+    switch (type)
+    {
+        case NUM:  return  NUM_NAME;
+        case OPER: return OPER_NAME;
+        case VAR:  return  VAR_NAME;
+        case NIL:  return  NIL_NAME;
+        default:   return  ERR_NAME;
+    }
 }

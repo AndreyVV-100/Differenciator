@@ -28,7 +28,7 @@ struct element
     element* left   = nullptr;
     element* right  = nullptr;
     double num      = NAN;
-    char symb       = '\0';
+    char symb       = '~';
 };
 
 struct Tree
@@ -44,12 +44,14 @@ element* ElementConstructor (Types type, double num, char symb);
 
 void ElementDestructor (element* el);
 
-element* InsertHead (Tree* tree, const char* str);
+element* InsertHead   (Tree* tree, Types type, double num, char symb);
 
-element* InsertLeft (Tree* tree, element* el, const char* str);
+element* InsertLeft  (element* el, Types type, double num, char symb);
 
-element* InsertRight (Tree* tree, element* el, const char* str);
+element* InsertRight (element* el, Types type, double num, char symb);
 
 void CreateDump (Tree* tree);
 
 int ElementDump (FILE* graph, element* el);
+
+const char* TypeCheck (Types type);
