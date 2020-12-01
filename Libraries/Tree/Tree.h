@@ -7,17 +7,7 @@
 
 #pragma warning (disable : 4996)
 
-#define ass_ins_emp assert (tree);                  \
-                    assert (tree->head == nullptr);
-
-#define ass_ins_n_emp(pos)  assert (tree);                  \
-                            assert (str);                   \
-                            assert (el);                    \
-                            assert (tree->head != nullptr); \
-                            assert (tree->size != 0);       \
-                            assert (pos == nullptr);
-
-#define create_el element* el_crt = ElementConstructor ();
+#define create_el element* el_crt = ElementConstructor (type, num, symb)
 
 #define tree_error_printf {                                                                      \
                           printf ("\n""Ошибка: дерево повреждено. Обратитесь к разработчику.\n");\
@@ -62,4 +52,4 @@ element* InsertRight (Tree* tree, element* el, const char* str);
 
 void CreateDump (Tree* tree);
 
-int ElementDump (FILE* graph, element* el, size_t* passed_elems, size_t size);
+int ElementDump (FILE* graph, element* el);

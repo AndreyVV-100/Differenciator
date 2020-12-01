@@ -52,36 +52,32 @@ void ElementDestructor (element* el)
     return;
 }
 
-element* InsertHead (Tree* tree, )
+element* InsertHead   (Tree* tree, Types type, double num, char symb)
 {
-    ass_ins_emp;
+    assert (tree);
+    assert (tree->head == nullptr);
 
-    cal;
-
+    create_el;
     tree->head = el_crt;
 
     return el_crt;
 }
 
-element* InsertLeft (Tree* tree, element* el, const char* str)
+element* InsertLeft  (element* el, Types type, double num, char symb)
 {
-    ass_ins_n_emp (el->left);
+    assert (el->left);
 
-    cal;
-
-    el_crt->prev = el;
+    create_el;
     el->left = el_crt;
 
     return el_crt;
 }
 
-element* InsertRight (Tree* tree, element* el, const char* str)
+element* InsertRight (element* el, Types type, double num, char symb)
 {
-    ass_ins_n_emp (el->right);
+    assert (el->right);
 
-    cal;
-
-    el_crt->prev = el;
+    create_el;
     el->right = el_crt;
 
     return el_crt;
@@ -99,8 +95,9 @@ void CreateDump (Tree* tree)
 
     if (tree->head)
     {
-        fprintf (graph, "\"%p:\\n `%s`\";\n", tree->head, tree->head->str);
-        ElementDump (graph, tree->head, &passed_elems, tree->size);
+        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %d\"",
+                 tree->head->type, tree->head->symb, tree->head->num);
+        ElementDump (graph, tree->head);
     }
     else
         fprintf (graph, "Нет элементов;\n");
@@ -115,31 +112,30 @@ void CreateDump (Tree* tree)
     return;
 }
 
-int ElementDump (FILE* graph, element* el, size_t* passed_elems, size_t size)
+int ElementDump (FILE* graph, element* el)
 {
     assert (graph);
     assert (el);
-    assert (passed_elems);
-
-    (*passed_elems)++;
-    if (*passed_elems > size)
-        return 1;
 
     if (el->left)
     {
-        fprintf (graph, "\"%p:\\n `%s`\" -> \"%p:\\n `%s`\" [label = \"нет\"]\n;",
-            el, el->str, el->left, el->left->str);
+        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %d\" ->"
+                        "\"Type: %d\\n Symb: %c\\n Num: %d\" [label = \"нет\"]\n;",
+                       el->type,       el->symb,       el->num, 
+                 el->left->type, el->left->symb, el->left->num);
 
-        if (ElementDump (graph, el->left, passed_elems, size))
+        if (ElementDump (graph, el->left))
             return 1;
     }
 
-    if (el->left)
+    if (el->right)
     {
-        fprintf (graph, "\"%p:\\n `%s`\" -> \"%p:\\n `%s`\" [label = \"да\"]\n;",
-            el, el->str, el->right, el->right->str);
+        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %d\" ->"
+                        "\"Type: %d\\n Symb: %c\\n Num: %d\" [label = \"нет\"]\n;",
+                        el->type,        el->symb,        el->num, 
+                 el->right->type, el->right->symb, el->right->num);
 
-        if (ElementDump (graph, el->right, passed_elems, size))
+        if (ElementDump (graph, el->right))
             return 1;
     }
 

@@ -16,6 +16,4 @@ ReadErr ReadFunction (Tree* func, const char* file_name)
         printf ("I'm sorry, I can't open this file.");
         return OPEN;
     }
-
-    func->head = 
 }
