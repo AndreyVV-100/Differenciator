@@ -95,7 +95,7 @@ void CreateDump (Tree* tree)
 
     if (tree->head)
     {
-        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %d\"",
+        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %lf\"",
                  tree->head->type, tree->head->symb, tree->head->num);
         ElementDump (graph, tree->head);
     }
@@ -119,8 +119,8 @@ int ElementDump (FILE* graph, element* el)
 
     if (el->left)
     {
-        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %d\" ->"
-                        "\"Type: %d\\n Symb: %c\\n Num: %d\" [label = \"нет\"]\n;",
+        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %lf\" ->"
+                        "\"Type: %d\\n Symb: %c\\n Num: %lf\" [label = \"нет\"]\n;",
                        el->type,       el->symb,       el->num, 
                  el->left->type, el->left->symb, el->left->num);
 
@@ -130,8 +130,8 @@ int ElementDump (FILE* graph, element* el)
 
     if (el->right)
     {
-        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %d\" ->"
-                        "\"Type: %d\\n Symb: %c\\n Num: %d\" [label = \"нет\"]\n;",
+        fprintf (graph, "\"Type: %d\\n Symb: %c\\n Num: %lf\" ->"
+                        "\"Type: %d\\n Symb: %c\\n Num: %lf\" [label = \"нет\"]\n;",
                         el->type,        el->symb,        el->num, 
                  el->right->type, el->right->symb, el->right->num);
 
