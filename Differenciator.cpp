@@ -7,7 +7,9 @@ int main ()
     if (ReadFunction (&function, "EqFiles/eq1.txt"))
         return 0;
 
-    CreateDump (&function);
+    CreateGraph (&function);
+    CreateTex   (&function);
+
     return 0;
 }
 

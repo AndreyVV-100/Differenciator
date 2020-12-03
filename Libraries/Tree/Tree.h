@@ -36,6 +36,20 @@ struct Tree
     element* head = nullptr;
 };
 
+enum Operators
+{
+    NO_OP = '~',
+    ADD = '+',
+    SUB = '-',
+    MUL = '*',
+    DIV = '/',
+    POW = '^',
+    SIN = '1',
+    COS = '2',
+    SH = '3',
+    CH = '4'
+};
+
 void TreeConstructor (Tree* tree);
 
 void TreeDestructor (Tree* tree);
@@ -50,8 +64,12 @@ element* InsertLeft  (element* el, Types type, double num, char symb);
 
 element* InsertRight (element* el, Types type, double num, char symb);
 
-void CreateDump (Tree* tree);
+void CreateGraph (Tree* tree);
 
-int ElementDump (FILE* graph, element* el);
+void ElementGraph (FILE* graph, element* el);
 
 const char* TypeCheck (Types type);
+
+void CreateTex (Tree* tree);
+
+void ElementTex (FILE* tex, element* el);

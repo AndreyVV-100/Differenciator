@@ -5,6 +5,10 @@
 
 # MY IGNORE
 *.txt
+*.dot
+*.tex
+*.png
+*.pdf
 
 # User-specific files
 *.rsuser

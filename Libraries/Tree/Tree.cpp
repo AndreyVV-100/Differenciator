@@ -90,21 +90,19 @@ element* InsertRight (element* el, Types type, double num, char symb)
     return el_crt;
 }
 
-void CreateDump (Tree* tree)
+void CreateGraph (Tree* tree)
 {
     assert (tree);
 
-    FILE* graph = fopen ("Graph/out.dot", "w");
+    FILE* graph = fopen ("AllDumps/out.dot", "w");
     assert (graph);
     fprintf (graph, "digraph G{\n" "rankdir = HR;\n node[shape=box];\n");
-
-    size_t passed_elems = 0;
 
     if (tree->head)
     {
         fprintf (graph, "\"Point: %p\\n %s\\n Symb: %c\\n Num: %lf\";\n",
                  tree->head, TypeCheck (tree->head->type), tree->head->symb, tree->head->num);
-        ElementDump (graph, tree->head);
+        ElementGraph (graph, tree->head);
     }
     else
         fprintf (graph, "\"No elements\";\n");
@@ -112,13 +110,13 @@ void CreateDump (Tree* tree)
     fprintf (graph, "}");
     fclose (graph);
 
-    system ("dot -Tpng Graph\\out.dot -o Graph\\gr.png");
-    system ("start Graph\\gr.png");
+    system ("dot -Tpng AllDumps\\out.dot -o AllDumps\\gr.png");
+    system ("start AllDumps\\gr.png");
 
     return;
 }
 
-int ElementDump (FILE* graph, element* el)
+void ElementGraph (FILE* graph, element* el)
 {
     assert (graph);
     assert (el);
@@ -130,8 +128,7 @@ int ElementDump (FILE* graph, element* el)
                        el,       TypeCheck (el->type),       el->symb,       el->num, 
                  el->left, TypeCheck (el->left->type), el->left->symb, el->left->num);
 
-        if (ElementDump (graph, el->left))
-            return 1;
+        ElementGraph (graph, el->left);
     }
 
     if (el->right)
@@ -141,11 +138,10 @@ int ElementDump (FILE* graph, element* el)
                         el,        TypeCheck (el->type),        el->symb,        el->num, 
                  el->right, TypeCheck (el->right->type), el->right->symb, el->right->num);
 
-        if (ElementDump (graph, el->right))
-            return 1;
+        ElementGraph (graph, el->right);
     }
 
-    return 0;
+    return;
 }
 
 const char* TypeCheck (Types type)
@@ -158,4 +154,107 @@ const char* TypeCheck (Types type)
         case NIL:  return  NIL_NAME;
         default:   return  ERR_NAME;
     }
+}
+
+void CreateTex (Tree* tree)
+{
+    assert (tree);
+
+    FILE* tex = fopen ("AllDumps/Tree.tex", "w");
+    assert (tex);
+    fprintf (tex,   "\\documentclass[12pt]{article}\n"
+                    "\\usepackage[russian]{babel}\n\n"
+                    "\\begin{document}\n");
+
+    if (tree->head)
+    {
+        fprintf (tex, "\\begin{equation}\n");
+        ElementTex (tex, tree->head);
+        fprintf (tex, "\\end{equation}\n");
+    }
+    else
+        fprintf (tex, "No elements\n");
+
+    fprintf (tex, "\\end{document}\n");
+    fclose (tex);
+
+    system ("calltex>nul Tree AllDumps");
+    return;
+}
+
+void ElementTex (FILE* tex, element* el)
+{
+    assert (tex);
+    if (!el || el->type == NIL)
+        return;
+
+    if (el->type == NUM)
+    {
+        fprintf (tex, "%.0lf", el->num);
+        return;
+    }
+
+    if (el->type == VAR)
+    {
+        fprintf (tex, "%c", el->symb);
+        return;
+    }
+
+    switch (el->symb)
+    {
+        #define TexL ElementTex (tex, el->left)
+        #define TexR ElementTex (tex, el->right)
+
+        case ADD:
+        case SUB:
+            fprintf (tex, "(");
+            TexL;
+            fprintf (tex, " %c ", el->symb);
+            TexR;
+            fprintf (tex, ")");
+            break;
+        case MUL:
+            TexL;
+            fprintf (tex, " \\cdot ", el->symb);
+            TexR;
+            break;
+        case DIV:
+            fprintf (tex, " \\frac{");
+            TexL;
+            fprintf (tex, "}{");
+            TexR;
+            fprintf (tex, "}");
+            break;
+        case POW:
+            if (el->left->type == OPER)
+                fprintf (tex, "(");
+            TexL;
+            if (el->left->type == OPER)
+                fprintf (tex, ")");
+            fprintf (tex, "^{");
+            TexR;
+            fprintf (tex, "}");
+            break;
+        case SIN:
+            fprintf (tex, "\\sin ");
+            TexR;
+            break;
+        case COS:
+            fprintf (tex, "\\cos ");
+            TexR;
+            break;
+        case SH :
+            fprintf (tex, "\\sh ");
+            TexR;
+            break;
+        case CH :
+            fprintf (tex, "\\ch ");
+            TexR;
+            break;
+
+        #undef TexL
+        #undef TexR
+    }
+
+    return;
 }
