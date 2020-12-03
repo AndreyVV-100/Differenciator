@@ -202,6 +202,10 @@ void    ReadOper (char** eq, element* elem)
             else if (strcmp ("ch", oper) == 0)
                 elem->symb = CH;
             return;
+        case 'l':
+            if (strcmp ("ln", oper) == 0)
+                elem->symb = LN;
+            return;
         default:
             return;
     }
@@ -285,9 +289,11 @@ void CreateTex (Tree* tree)
 
     if (tree->head)
     {
-        fprintf (tex, "\\begin{equation}\n");
-        ElementTex (tex, tree->head);
-        fprintf (tex, "\\end{equation}\n");
+        //fprintf (tex, "\\begin{equation}\n");
+        fprintf (tex, "$\n");
+        ElementTex (tex, tree->head, 0);
+        fprintf (tex, "$\n");
+        //fprintf (tex, "\\end{equation}\n");
     }
     else
         fprintf (tex, "No elements\n");
@@ -299,7 +305,7 @@ void CreateTex (Tree* tree)
     return;
 }
 
-void ElementTex (FILE* tex, element* el)
+void ElementTex (FILE* tex, element* el, bool need_brackets)
 {
     assert (tex);
     if (!el || el->type == NIL)
@@ -319,58 +325,68 @@ void ElementTex (FILE* tex, element* el)
 
     switch (el->symb)
     {
-        #define TexL ElementTex (tex, el->left)
-        #define TexR ElementTex (tex, el->right)
+        #define TexL(need) ElementTex (tex, el->left,  need)
+        #define TexR(need) ElementTex (tex, el->right, need)
+
+        #define priority(elem, bracket) if (elem->type == OPER)     \
+                                            fprintf (tex, bracket)
+
+        #define unar_oper(oper) fprintf (tex, "\\" oper " ");   \
+                                priority (el->right, "(");      \
+                                TexR (0);                       \
+                                priority (el->right, ")")
 
         case ADD:
         case SUB:
-            fprintf (tex, "(");
-            TexL;
+            if (need_brackets)
+                fprintf (tex, "(");
+            TexL (0);
             fprintf (tex, " %c ", el->symb);
-            TexR;
-            fprintf (tex, ")");
+            TexR (0);
+            if (need_brackets)
+                fprintf (tex, ")");
             break;
         case MUL:
-            TexL;
+            TexL (1);
             fprintf (tex, " \\cdot ");
-            TexR;
+            TexR (1);
             break;
         case DIV:
             fprintf (tex, " \\frac{");
-            TexL;
+            TexL (0);
             fprintf (tex, "}{");
-            TexR;
+            TexR (0);
             fprintf (tex, "}");
             break;
         case POW:
-            if (el->left->type == OPER)
-                fprintf (tex, "(");
-            TexL;
-            if (el->left->type == OPER)
-                fprintf (tex, ")");
+            priority (el->left, "(");
+            TexL (0);
+            priority (el->left, ")");
+
             fprintf (tex, "^{");
-            TexR;
+            TexR (0);
             fprintf (tex, "}");
             break;
         case SIN:
-            fprintf (tex, "\\sin ");
-            TexR;
+            unar_oper ("sin");
             break;
         case COS:
-            fprintf (tex, "\\cos ");
-            TexR;
+            unar_oper ("cos");
             break;
         case SH :
-            fprintf (tex, "\\sh ");
-            TexR;
+            unar_oper ("sh");
             break;
         case CH :
-            fprintf (tex, "\\ch ");
-            TexR;
+            unar_oper ("ch");
+            break;
+        case LN:
+            unar_oper ("ln");
             break;
 
         #undef TexL
         #undef TexR
+        #undef priority
+        #undef unar_oper
     }
 
     return;

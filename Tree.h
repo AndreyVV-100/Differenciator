@@ -25,15 +25,16 @@ enum Types
 enum Operators
 {
     NO_OP = '~',
-    ADD = '+',
-    SUB = '-',
-    MUL = '*',
-    DIV = '/',
-    POW = '^',
-    SIN = '1',
-    COS = '2',
-    SH = '3',
-    CH = '4'
+    ADD   = '+',
+    SUB   = '-',
+    MUL   = '*',
+    DIV   = '/',
+    POW   = '^',
+    SIN   = '1',
+    COS   = '2',
+    SH    = '3',
+    CH    = '4',
+    LN    = '5'
 };
 
 
@@ -64,13 +65,3 @@ element* InsertHead   (Tree* tree, Types type, double num, char symb);
 element* InsertLeft  (element* el, Types type, double num, char symb);
 
 element* InsertRight (element* el, Types type, double num, char symb);
-
-void CreateGraph (Tree* tree);
-
-void ElementGraph (FILE* graph, element* el);
-
-const char* TypeCheck (Types type);
-
-void CreateTex (Tree* tree);
-
-void ElementTex (FILE* tex, element* el);

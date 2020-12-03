@@ -1,5 +1,6 @@
 struct element;
 struct Tree;
+enum Types;
 #include <stdio.h>
 
 // defines: CReate Operator, Variable, Number
@@ -20,3 +21,13 @@ element* ReadVar (char** eq);
 element* ReadNum (char** eq);
 
 void    ReadOper (char** eq, element* elem);
+
+void CreateGraph (Tree* tree);
+
+void ElementGraph (FILE* graph, element* el);
+
+const char* TypeCheck (Types type);
+
+void CreateTex (Tree* tree);
+
+void ElementTex (FILE* tex, element* el, bool need_brackets);
