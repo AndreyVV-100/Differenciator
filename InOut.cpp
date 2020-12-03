@@ -1,4 +1,13 @@
+#include "InOut.h"
+#include "Differenciator.h"
 #include "Tree.h"
+
+#pragma warning (disable : 26451)
+/*
+    Арифметическое переполнение: использование оператора "*" на байтовом значении 4 и
+    приведение результата к байтовому значению 8. Приведите значение к более широкому
+    типу перед вызовом оператора "*", чтобы избежать переполнения (io.2).
+*/
 
 // Types Names
 const char* NUM_NAME  = "Number";
@@ -7,87 +16,195 @@ const char* VAR_NAME  = "Variable";
 const char* NIL_NAME  = "Not determined";
 const char* ERR_NAME  = "Error!";
 
-void TreeConstructor (Tree* tree)
+bool ReadFunction (Tree* func, const char* file_name)
 {
-    assert (tree);
-    tree->head = nullptr;
+    assert (file_name);
+
+    FILE* eq = fopen (file_name, "r"); // equation
+    if (!eq)
+    {
+        printf ("I'm sorry, I can't open this file.");
+        return 1;
+    }
+
+    size_t num_symbols = CountSize (eq);
+    char* equation = (char*) calloc (num_symbols + 1, sizeof (*equation));
+    if (!equation)
+    {
+        printf ("Memory error.");
+        return 1;
+    }
+
+    fread (equation, sizeof (*equation), num_symbols, eq);
+    fclose (eq);
+
+    char* equation_copy = equation;
+    SkipSpaces (&equation_copy);
+    func->head = ReadElement (&equation_copy);
+    if (func->head == nullptr)
+    {
+        printf ("The equation was poorly written.");
+        free (equation);
+        return 1;
+    }
+
+    free (equation);
+    return 0;
+}
+
+size_t CountSize (FILE* file)
+{
+    fseek (file, 0, SEEK_END);
+    size_t num_symbols = ftell (file);
+    fseek (file, 0, SEEK_SET);
+
+    return num_symbols;
+}
+
+element* ReadElement (char** eq)
+{
+    assert (eq);
+    assert (*eq);
+
+    if (**eq != '(')
+    {
+        printf ("No open bracket:\n" "%s\n", *eq);
+        return nullptr;
+    }
+    *eq += 1;
+    SkipSpaces (eq);
+
+    element* el_ret = CR_O(NO_OP);
+
+    if (**eq == '(')
+    {
+        el_ret->left = ReadElement (eq);
+        if (el_ret->left == nullptr)
+        {
+            ElementDestructor (el_ret);
+            return nullptr;
+        }
+    }
+    else
+    {
+        el_ret->left = ReadVar (eq);
+        if (el_ret->left == nullptr)
+            el_ret->left = ReadNum (eq);
+    }
+
+    ReadOper (eq, el_ret);
+    if (el_ret->symb == NO_OP)
+    {
+        printf ("Bad operator.\n" "%s\n", *eq);
+        ElementDestructor (el_ret);
+        return nullptr;
+    }
+
+    SkipSpaces (eq);
+
+    if (**eq == '(')
+        el_ret->right = ReadElement (eq);
+    else
+    {
+        el_ret->right = ReadVar (eq);
+        if (el_ret->right == nullptr)
+            el_ret->right = ReadNum (eq);
+    }
+
+    SkipSpaces (eq);
+
+    if (el_ret->right == nullptr || **eq != ')')
+    {
+        printf ("Bad end.\n" "%s\n", *eq);
+        ElementDestructor (el_ret);
+        return nullptr;
+    }
+
+    *eq += 1;
+    return el_ret;
+}
+
+void  SkipSpaces (char** eq)
+{
+    assert (eq);
+    assert (*eq);
+
+    while (**eq == ' ' || **eq == '\t' || **eq == '\n' || **eq == '\r')
+        *eq += 1;
+
     return;
 }
 
-void TreeDestructor (Tree* tree)
+element* ReadVar (char** eq)
 {
-    assert (tree);
+    assert (eq);
+    assert (*eq);
 
-    if (tree->head != nullptr)
-        ElementDestructor (tree->head);
+    char var = '\0';
+    size_t shift = 0;
+    sscanf (*eq, " %c%n", &var, &shift);
 
-    tree->head = nullptr;
-
-    return;
-}
-
-element* ElementConstructor (Types type, double num, char symb)
-{
-    element* el_crt = (element*)calloc (1, sizeof (*el_crt));
-    if (!el_crt)
+    if (!var)
         return nullptr;
 
-    *el_crt = { type, nullptr, nullptr, num, symb };
-    return el_crt;
+    // ToDo: List of vars, check all list
+    if (var != 'x')
+        return nullptr;
+
+    *eq += shift;
+    return CR_V (var);
 }
 
-void ElementDestructor (element* el)
+element* ReadNum (char** eq)
 {
-    assert (el);
+    assert (eq);
+    assert (*eq);
 
-    element* left = el->left;
-    element* right = el->right;
+    double num = NAN;
+    size_t shift = 0;
+    sscanf (*eq, " %lf%n", &num, &shift);
 
-    el->left  = nullptr;
-    el->right = nullptr;
-    el->num   = NAN;
-    el->symb  = '\0';
-    el->type  = NIL;
-    free (el);
-
-    if (left != nullptr)
-        ElementDestructor (left);
-
-    if (right != nullptr)
-        ElementDestructor (right);
-
-    return;
+    *eq += shift;
+    return CR_N (num);
 }
 
-element* InsertHead   (Tree* tree, Types type, double num, char symb)
+void    ReadOper (char** eq, element* elem)
 {
-    assert (tree);
-    assert (tree->head == nullptr);
+    assert (elem);
+    assert (eq);
+    assert (*eq);
 
-    create_el;
-    tree->head = el_crt;
+    const size_t oper_size  = 16;
+    char    oper[oper_size] = "";
+    size_t shift = 0;
 
-    return el_crt;
-}
+    sscanf (*eq, " %s%n", oper, &shift);
+    *eq += shift;
 
-element* InsertLeft  (element* el, Types type, double num, char symb)
-{
-    assert (el->left);
-
-    create_el;
-    el->left = el_crt;
-
-    return el_crt;
-}
-
-element* InsertRight (element* el, Types type, double num, char symb)
-{
-    assert (el->right);
-
-    create_el;
-    el->right = el_crt;
-
-    return el_crt;
+    switch (*oper)
+    {
+        case ADD:
+        case SUB:
+        case MUL:
+        case DIV:
+        case POW:
+            elem->symb = *oper;
+            return;
+        case 's':
+            if (strcmp ("sin", oper) == 0)
+                elem->symb = SIN;
+            else if (strcmp ("sh", oper) == 0)
+                elem->symb = SH;
+            return;
+        case 'c':
+            if (strcmp ("cos", oper) == 0)
+                elem->symb = COS;
+            else if (strcmp ("ch", oper) == 0)
+                elem->symb = CH;
+            return;
+        default:
+            return;
+    }
 }
 
 void CreateGraph (Tree* tree)
@@ -215,7 +332,7 @@ void ElementTex (FILE* tex, element* el)
             break;
         case MUL:
             TexL;
-            fprintf (tex, " \\cdot ", el->symb);
+            fprintf (tex, " \\cdot ");
             TexR;
             break;
         case DIV:

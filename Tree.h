@@ -22,20 +22,6 @@ enum Types
     NIL  = 3
 };
 
-struct element
-{
-    Types type      = NIL;
-    element* left   = nullptr;
-    element* right  = nullptr;
-    double num      = NAN;
-    char symb       = '~';
-};
-
-struct Tree
-{
-    element* head = nullptr;
-};
-
 enum Operators
 {
     NO_OP = '~',
@@ -48,6 +34,21 @@ enum Operators
     COS = '2',
     SH = '3',
     CH = '4'
+};
+
+
+struct element
+{
+    Types type      = NIL;
+    element* left   = nullptr;
+    element* right  = nullptr;
+    double num      = NAN;
+    char symb       = NO_OP;
+};
+
+struct Tree
+{
+    element* head = nullptr;
 };
 
 void TreeConstructor (Tree* tree);

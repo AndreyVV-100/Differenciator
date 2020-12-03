@@ -140,11 +140,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Differenciator.cpp" />
-    <ClCompile Include="Libraries\Tree\Tree.cpp" />
+    <ClCompile Include="InOut.cpp" />
+    <ClCompile Include="Tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Differenciator.h" />
-    <ClInclude Include="Libraries\Tree\Tree.h" />
+    <ClInclude Include="InOut.h" />
+    <ClInclude Include="Tree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
