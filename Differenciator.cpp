@@ -12,7 +12,7 @@
 int main ()
 {
     Tree function = {};
-    if (ReadFunction (&function, "EqFiles/eq3.txt"))
+    if (ReadFunction (&function, "EqFiles/eq4.txt"))
         return 0;
     Tree differential = {};
 
@@ -73,20 +73,24 @@ element* DiffBranch (element* el)
 
     // d - derivative
     // c - copy
-    
+    // ToDo: denominator, numerator
+
     switch (el->symb)
     {
         case ADD:
         case SUB:
             return Un (el->symb, dL, dR);
+
         case MUL:
             return Un (ADD, Un (MUL, dL, cR), Un (MUL, cL, dR));
+
         case DIV:
         {
             element* numerator   = Un (SUB, Un (MUL, dL, cR), Un (MUL, cL, dR));
             element* denominator = Un (POW, cR, CR_N (2));
             return Un (DIV, numerator, denominator);
         }
+
         case POW:
         {
             element* power = nullptr;
@@ -115,14 +119,88 @@ element* DiffBranch (element* el)
 
             return Un (MUL, coeff, power);
         }
+
         case SIN:
             return Un (MUL, dR, Un (COS, nullptr, cR));
+
         case COS:
             return Un (MUL, CR_N (-1), Un (MUL, dR, Un (SIN, nullptr, cR)));
+
+        case TG:
+        {
+            element* denominator = Un (POW, Un (COS, nullptr, cR), CR_N (2));
+            return Un (DIV, dR, denominator);
+        }
+
+        case CTG:
+        {
+            element* denominator = Un (POW, Un (SIN, nullptr, cR), CR_N (2));
+            return Un (DIV, Un (MUL, CR_N(-1), dR), denominator);
+        }
+
         case SH:
             return Un (MUL, dR, Un (CH, nullptr, cR));
+
         case CH:
             return Un (MUL, dR, Un (SH, nullptr, cR));
+
+        case TH:
+        {
+            element* denominator = Un (POW, Un (CH, nullptr, cR), CR_N (2));
+            return Un (DIV, dR, denominator);
+        }
+
+        case CTH:
+        {
+            element* denominator = Un (POW, Un (SH, nullptr, cR), CR_N (2));
+            return Un (DIV, Un (MUL, CR_N (-1), dR), denominator);
+        }
+
+        case ARCSIN:
+        {
+            element* denominator = Un (SUB, CR_N (1), Un (POW, cR, CR_N (2)));
+            return Un (DIV, dR, Un (POW, denominator, CR_N (0.5)));
+        }
+
+        case ARCCOS:
+        {
+            element* numerator = Un (MUL, CR_N (-1), dL);
+            element* denominator = Un (SUB, CR_N (1), Un (POW, cR, CR_N (2)));
+            return Un (DIV, numerator, Un (POW, denominator, CR_N (0.5)));
+        }
+
+        case ARCTG:
+        {
+            element* denominator = Un (ADD, CR_N (1), Un (POW, cR, CR_N (2)));
+            return Un (DIV, dR, denominator);
+        }
+
+        case ARCCTG:
+        {
+            element* numerator = Un (MUL, CR_N (-1), dL);
+            element* denominator = Un (ADD, CR_N (1), Un (POW, cR, CR_N (2)));
+            return Un (DIV, numerator, denominator);
+        }
+
+        case ARCSH:
+        {
+            element* denominator = Un (ADD, CR_N (1), Un (POW, cR, CR_N (2)));
+            return Un (DIV, dR, Un (POW, denominator, CR_N (0.5)));
+        }
+
+        case ARCCH:
+        {
+            element* denominator = Un (SUB, Un (POW, cR, CR_N (2)), CR_N (1));
+            return Un (DIV, dR, Un (POW, denominator, CR_N (0.5)));
+        }
+
+        case ARCTH:
+        case ARCCTH:
+        {
+            element* denominator = Un (SUB, CR_N (1), Un (POW, cR, CR_N (2)));
+            return Un (DIV, dR, denominator);
+        }
+
         case LN:
             return Un (DIV, dR, cR);
     }

@@ -189,22 +189,56 @@ void    ReadOper (char** eq, element* elem)
         case POW:
             elem->symb = *oper;
             return;
+
+        case 'a':
+            if (strcmp ("arcsin", oper) == 0)
+                elem->symb = ARCSIN;
+            else if (strcmp ("arccos", oper) == 0)
+                elem->symb = ARCCOS;
+            else if (strcmp ("arctg", oper) == 0)
+                elem->symb = ARCTG;
+            else if (strcmp ("arcctg", oper) == 0)
+                elem->symb = ARCCTG;
+            if (strcmp ("arcsh", oper) == 0)
+                elem->symb = ARCSH;
+            else if (strcmp ("arcch", oper) == 0)
+                elem->symb = ARCCH;
+            else if (strcmp ("arcth", oper) == 0)
+                elem->symb = ARCTH;
+            else if (strcmp ("arccth", oper) == 0)
+                elem->symb = ARCCTH;
+            return;
+
+        case 'c':
+            if (strcmp ("cos", oper) == 0)
+                elem->symb = COS;
+            else if (strcmp ("ch", oper) == 0)
+                elem->symb = CH;
+            else if (strcmp ("ctg", oper) == 0)
+                elem->symb = CTG;
+            else if (strcmp ("cth", oper) == 0)
+                elem->symb = CTH;
+            return;
+
+        case 'l':
+            if (strcmp ("ln", oper) == 0)
+                elem->symb = LN;
+            return;
+
         case 's':
             if (strcmp ("sin", oper) == 0)
                 elem->symb = SIN;
             else if (strcmp ("sh", oper) == 0)
                 elem->symb = SH;
             return;
-        case 'c':
-            if (strcmp ("cos", oper) == 0)
-                elem->symb = COS;
-            else if (strcmp ("ch", oper) == 0)
+
+        case 't':
+            if (strcmp ("tg", oper) == 0)
+                elem->symb = TG;
+            else if (strcmp ("tg", oper) == 0)
                 elem->symb = CH;
             return;
-        case 'l':
-            if (strcmp ("ln", oper) == 0)
-                elem->symb = LN;
-            return;
+
         default:
             return;
     }

@@ -24,17 +24,29 @@ enum Types
 
 enum Operators
 {
-    NO_OP = '~',
-    ADD   = '+',
-    SUB   = '-',
-    MUL   = '*',
-    DIV   = '/',
-    POW   = '^',
-    SIN   = '1',
-    COS   = '2',
-    SH    = '3',
-    CH    = '4',
-    LN    = '5'
+    NO_OP   = '~',
+    ADD     = '+',
+    SUB     = '-',
+    MUL     = '*',
+    DIV     = '/',
+    POW     = '^',
+    SIN     = 'A',
+    COS     = 'B',
+    TG      = 'C',
+    CTG     = 'D',
+    ARCSIN  = 'E',
+    ARCCOS  = 'F',
+    ARCTG   = 'G',
+    ARCCTG  = 'H',
+    SH      = 'I',
+    CH      = 'J',
+    TH      = 'K',
+    CTH     = 'L',
+    ARCSH   = 'M',
+    ARCCH   = 'N',
+    ARCTH   = 'O',
+    ARCCTH  = 'P',
+    LN      = 'Q'
 };
 
 
