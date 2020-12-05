@@ -1,5 +1,4 @@
 #include "InOut.h"
-#include "Differenciator.h"
 #include "Tree.h"
 
 #pragma warning (disable : 26451)

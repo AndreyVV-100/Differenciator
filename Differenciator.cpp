@@ -12,11 +12,12 @@
 int main ()
 {
     Tree function = {};
-    if (ReadFunction (&function, "EqFiles/eq2.txt"))
+    if (ReadFunction (&function, "EqFiles/eq3.txt"))
         return 0;
     Tree differential = {};
 
     DiffFunction (&function, &differential);
+    while (Simplifier (&(differential.head)));
     CreateTex (&differential);
     return 0;
 }
@@ -72,7 +73,6 @@ element* DiffBranch (element* el)
 
     // d - derivative
     // c - copy
-    // r - return
     
     switch (el->symb)
     {
@@ -135,4 +135,130 @@ element* UnionBranches (char oper, element* el_left, element* el_right)
     union_element->left    = el_left;
     union_element->right   = el_right;
     return union_element;
+}
+
+bool IsEqual (double num1, double num2)
+{
+    const double precision = 1e-10;
+    return fabs (num1 - num2) < precision;
+}
+
+bool Simplifier (element** el)
+{
+    if (!el || !elem || elem->type != OPER)
+        return 0;
+    
+    while (Simplifier (&L));
+    while (Simplifier (&R));
+
+    switch (elem->symb)
+    {
+        case ADD: return SimpleAdd (el);
+        case SUB: return SimpleSub (el);
+        case MUL: return SimpleMul (el);
+        case DIV: return SimpleDiv (el);
+        case POW: return SimplePow (el);
+    }
+
+    return 0;
+}
+
+bool SimpleAdd (element** el)
+{
+    assert (el);
+    assert (elem);
+    assert (elem->symb == ADD);
+
+    if (L->type == NUM && R->type == NUM)
+        num_branch (L->num + R->num);
+
+    if (L->type == NUM && IsEqual (L->num, 0))
+        move_branch (right);
+
+    if (R->type == NUM && IsEqual (R->num, 0))
+        move_branch (left);
+    
+    return 0;
+}
+
+bool SimpleSub (element** el)
+{
+    assert (el);
+    assert (elem);
+    assert (elem->symb == SUB);
+
+    if (L->type == NUM && R->type == NUM)
+        num_branch (L->num - R->num);
+
+    if (R->type == NUM && IsEqual (R->num, 0))
+        move_branch (left);
+
+    // ToDo: 0 - f(x) = -1 * f(x)
+    return 0;
+}
+
+bool SimpleMul (element** el)
+{
+    assert (el);
+    assert (elem);
+    assert (elem->symb == MUL);
+
+    if (L->type == NUM && R->type == NUM)
+        num_branch (L->num * R->num);
+
+    if (L->type == NUM && IsEqual (L->num, 1))
+        move_branch (right);
+
+    if (R->type == NUM && IsEqual (R->num, 1))
+        move_branch (left);
+
+    if (L->type == NUM && IsEqual (L->num, 0))
+        num_branch (0);
+
+    if (R->type == NUM && IsEqual (R->num, 0))
+        num_branch (0);
+
+    return 0;
+}
+
+bool SimpleDiv (element** el)
+{
+    assert (el);
+    assert (elem);
+    assert (elem->symb == DIV);
+
+    if (L->type == NUM && R->type == NUM)
+        num_branch (L->num / R->num);
+
+    if (R->type == NUM && IsEqual (R->num, 1))
+        move_branch (left);
+
+    if (L->type == NUM && IsEqual (L->num, 0))
+        num_branch (0);
+
+    return 0;
+}
+
+bool SimplePow (element** el)
+{
+    assert (el);
+    assert (elem);
+    assert (elem->symb == POW);
+
+    if (L->type == NUM && R->type == NUM)
+        num_branch (pow(L->num, R->num));
+
+    if (L->type == NUM && IsEqual (L->num, 1))
+        num_branch (1);
+
+    if (R->type == NUM && IsEqual (R->num, 1))
+        move_branch (left);
+
+    if (L->type == NUM && IsEqual (L->num, 0))
+        num_branch (0);
+
+    if (R->type == NUM && IsEqual (R->num, 0))
+        num_branch (1);
+
+    return 0;
 }
