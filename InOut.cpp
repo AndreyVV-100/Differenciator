@@ -1,5 +1,6 @@
 #include "InOut.h"
 #include "Tree.h"
+#include "Text.h"
 
 #pragma warning (disable : 26451)
 /*
@@ -19,23 +20,14 @@ bool ReadFunction (Tree* func, const char* file_name)
 {
     assert (file_name);
 
-    FILE* eq = fopen (file_name, "r"); // equation
-    if (!eq)
-    {
-        printf ("I'm sorry, I can't open this file.");
-        return 1;
-    }
-
-    size_t num_symbols = CountSize (eq);
-    char* equation = (char*) calloc (num_symbols + 1, sizeof (*equation));
+    char* equation = nullptr;
+    size_t num_symbols = ReadTxt (&equation, file_name);
+    
     if (!equation)
     {
         printf ("Memory error.");
         return 1;
     }
-
-    fread (equation, sizeof (*equation), num_symbols, eq);
-    fclose (eq);
 
     char* equation_copy = equation;
     SkipSpaces (&equation_copy);
@@ -49,15 +41,6 @@ bool ReadFunction (Tree* func, const char* file_name)
 
     free (equation);
     return 0;
-}
-
-size_t CountSize (FILE* file)
-{
-    fseek (file, 0, SEEK_END);
-    size_t num_symbols = ftell (file);
-    fseek (file, 0, SEEK_SET);
-
-    return num_symbols;
 }
 
 element* ReadElement (char** eq)
@@ -310,16 +293,54 @@ const char* TypeCheck (Types type)
     }
 }
 
-void CreateTex (Tree* tree)
+void CreateTex (element* el_was, element* el_became, bool last_iteration)
 {
-    assert (tree);
+    static FILE* tex = fopen ("AllDumps/Tree.tex", "w");
+    if (!tex)
+        return;
 
-    FILE* tex = fopen ("AllDumps/Tree.tex", "w");
-    assert (tex);
-    fprintf (tex,   "\\documentclass[12pt]{article}\n"
-                    "\\usepackage[russian]{babel}\n\n"
-                    "\\begin{document}\n");
+    if (last_iteration)
+    {
+        fprintf (tex, "\\end{document}\n");
+        fclose  (tex);
 
+        system ("calltex>nul Tree AllDumps");
+    }
+    
+    if (!el_was || !el_became)
+        return;
+
+    static bool first_iteration = 1;
+    static Text text = {};
+    static int number = 0;
+
+    if (first_iteration)
+    {
+        first_iteration = 0;
+        fprintf (tex,   "\\documentclass[12pt]{article}\n"
+                        "\\usepackage[russian]{babel}\n\n"
+                        "\\begin{document}\n");
+
+        char* intro = nullptr;
+        ReadTxt (&intro, "frases/intro.txt");
+        fprintf (tex, "%s\\\\", intro);
+        free (intro);
+
+        ConstructorText (&text, "frases/frases.txt");
+    }
+
+    fprintf (tex, "%s\\\\\n", text.lines[number].point);
+    printf ("%s\n", text.lines[number].point);
+    fprintf (tex, "$\\displaystyle\n");
+
+    ElementTex (tex, el_was, 0);
+    fprintf (tex, "=\n");
+    ElementTex (tex, el_became, 0);
+
+    fprintf (tex, "$\n");
+    number = (number + 1) % 37;
+
+    /*
     if (tree->head)
     {
         //fprintf (tex, "\\begin{equation}\n");
@@ -330,11 +351,7 @@ void CreateTex (Tree* tree)
     }
     else
         fprintf (tex, "No elements\n");
-
-    fprintf (tex, "\\end{document}\n");
-    fclose (tex);
-
-    system ("calltex>nul Tree AllDumps");
+*/
     return;
 }
 
@@ -406,11 +423,47 @@ void ElementTex (FILE* tex, element* el, bool need_brackets)
         case COS:
             unar_oper ("cos");
             break;
+        case TG:
+            unar_oper ("tg");
+            break;
+        case CTG:
+            unar_oper ("ctg");
+            break;
         case SH :
             unar_oper ("sh");
             break;
         case CH :
             unar_oper ("ch");
+            break;
+        case TH:
+            unar_oper ("th");
+            break;
+        case CTH:
+            unar_oper ("cth");
+            break;
+        case ARCSIN:
+            unar_oper ("arcsin");
+            break;
+        case ARCCOS:
+            unar_oper ("arccos");
+            break;
+        case ARCTG:
+            unar_oper ("arctg");
+            break;
+        case ARCCTG:
+            unar_oper ("arcctg");
+            break;
+        case ARCSH:
+            unar_oper ("arcsh");
+            break;
+        case ARCCH:
+            unar_oper ("arcch");
+            break;
+        case ARCTH:
+            unar_oper ("arcth");
+            break;
+        case ARCCTH:
+            unar_oper ("arccth");
             break;
         case LN:
             unar_oper ("ln");

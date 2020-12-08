@@ -10,8 +10,6 @@ enum Types;
 
 bool ReadFunction (Tree* func, const char* file_name);
 
-size_t CountSize (FILE* file);
-
 element* ReadElement (char** eq);
 
 void  SkipSpaces (char** eq);
@@ -28,6 +26,6 @@ void ElementGraph (FILE* graph, element* el);
 
 const char* TypeCheck (Types type);
 
-void CreateTex (Tree* tree);
+void CreateTex (element* el_was, element* el_became, bool last_iteration);
 
 void ElementTex (FILE* tex, element* el, bool need_brackets);

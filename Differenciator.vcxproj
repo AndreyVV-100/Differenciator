@@ -141,11 +141,13 @@
   <ItemGroup>
     <ClCompile Include="Differenciator.cpp" />
     <ClCompile Include="InOut.cpp" />
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="Tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Differenciator.h" />
     <ClInclude Include="InOut.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="Tree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
