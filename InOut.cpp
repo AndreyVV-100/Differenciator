@@ -1,6 +1,7 @@
 #include "InOut.h"
 #include "Tree.h"
 #include "Text.h"
+#include <time.h>
 
 #pragma warning (disable : 26451)
 /*
@@ -295,16 +296,29 @@ const char* TypeCheck (Types type)
 
 void CreateTex (element* el_was, element* el_became, bool last_iteration)
 {
+    // ToDo: functions
+
     static FILE* tex = fopen ("AllDumps/Tree.tex", "w");
     if (!tex)
         return;
 
     if (last_iteration)
     {
-        fprintf (tex, "\\end{document}\n");
-        fclose  (tex);
+        char* ending = nullptr;
+        ReadTxt (&ending, "frases/ending.txt");
 
-        system ("calltex>nul Tree AllDumps");
+        if (!ending)
+        {
+            fclose (tex);
+            return;
+        }
+
+        fprintf (tex, "%s", ending);
+        free (ending);
+        fclose (tex);
+        tex = nullptr;
+
+        system ("calltex Tree AllDumps");
     }
     
     if (!el_was || !el_became)
@@ -312,46 +326,60 @@ void CreateTex (element* el_was, element* el_became, bool last_iteration)
 
     static bool first_iteration = 1;
     static Text text = {};
-    static int number = 0;
+    static int  shizi = 0;
+    static Text count = {};
 
     if (first_iteration)
     {
         first_iteration = 0;
-        fprintf (tex,   "\\documentclass[12pt]{article}\n"
-                        "\\usepackage[russian]{babel}\n\n"
-                        "\\begin{document}\n");
+        srand (time (nullptr));
 
         char* intro = nullptr;
         ReadTxt (&intro, "frases/intro.txt");
-        fprintf (tex, "%s\\\\", intro);
+        if (!intro)
+        {
+            fclose (tex);
+            return;
+        }
+
+        fprintf (tex, "%s", intro);
         free (intro);
 
-        ConstructorText (&text, "frases/frases.txt");
+        ConstructorText (&count, "frases/count.txt");
+        ConstructorText (&text,  "frases/frases.txt");
     }
 
-    fprintf (tex, "%s\\\\\n", text.lines[number].point);
-    printf ("%s\n", text.lines[number].point);
-    fprintf (tex, "$\\displaystyle\n");
+    // space
+    #define sp "\\\\\n"
 
-    ElementTex (tex, el_was, 0);
-    fprintf (tex, "=\n");
-    ElementTex (tex, el_became, 0);
-
-    fprintf (tex, "$\n");
-    number = (number + 1) % 37;
-
-    /*
-    if (tree->head)
+    if (shizi < 10)
     {
-        //fprintf (tex, "\\begin{equation}\n");
-        fprintf (tex, "$\n");
-        ElementTex (tex, tree->head, 0);
-        fprintf (tex, "$\n");
-        //fprintf (tex, "\\end{equation}\n");
+        int rand_number = rand () % text.n_empty_lines;
+
+        if (shizi == 0)
+            fprintf (tex, sp "%s" sp, text.lines[rand_number].point);
+
+        if (shizi > 0 || rand_number == 0)
+        {
+            fprintf (tex, sp "%s" sp, count.lines[shizi].point);
+            shizi++;
+        }
+
+        fprintf (tex, "$\\Bigg(\\displaystyle\n");
+
+        ElementTex (tex, el_was, 0);
+        fprintf (tex, " \\Bigg)' = \n");
+        ElementTex (tex, el_became, 0);
+
+        fprintf (tex, "$" sp);
     }
     else
-        fprintf (tex, "No elements\n");
-*/
+        shizi--;
+
+    if (shizi == 10)
+        shizi = 0;
+
+    #undef sp
     return;
 }
 

@@ -13,11 +13,11 @@
 int main ()
 {
     Tree function = {};
-    ReadFunction (&function, "EqFiles/eq4.txt");
+    ReadFunction (&function, "EqFiles/eq5.txt");
     Tree differential = {};
 
     DiffFunction (&function, &differential);
-    while (Simplifier (&(differential.head)));
+    while (Simplifier (&(differential.head))) { ; }
     CreateTex (nullptr, nullptr, 1);
     return 0;
 }
@@ -98,6 +98,8 @@ element* DiffBranch (element* el)
 
         case POW:
         {
+            // ToDo: recursive go && function
+
             element* power = nullptr;
             element* coeff = nullptr;
 
