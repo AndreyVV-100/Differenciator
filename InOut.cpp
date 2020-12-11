@@ -343,7 +343,7 @@ void CreateTex (element* el_was, element* el_became, TexingModes tex_mode)
     else
         shizi--;
 
-    if (shizi == 10)
+    if (shizi == 10 || shizi == 11)
         shizi = 0;
 
     return;
@@ -487,28 +487,34 @@ void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi,
     if (*shizi == 0)
         fprintf (tex, sp "%s" sp, frases->lines[rand_number].point);
 
-    if (*shizi > 0 || rand_number == 0)
+    if ((*shizi > 0 || rand_number == 0) && *shizi < 11)
     {
         fprintf (tex, sp "%s" sp, count->lines[*shizi].point);
         (*shizi)++;
     }
 
-    char bracket_left[]  = "\\Bigg (";
-    char bracket_right[] = "\\Bigg)'";
+    if (rand_number == 1)
+        *shizi = 16;
 
-    if (tex_mode == SIMPLIFY)
+    if (*shizi < 11)
     {
-        bracket_left[0]  = '\0';
-        bracket_right[0] = '\0';
+        char bracket_left[] = "\\Bigg (";
+        char bracket_right[] = "\\Bigg)'";
+
+        if (tex_mode == SIMPLIFY)
+        {
+            bracket_left[0] = '\0';
+            bracket_right[0] = '\0';
+        }
+
+        fprintf (tex, "$%s \\displaystyle\n", bracket_left);
+
+        ElementTex (tex, el_was, 0);
+        fprintf (tex, " %s = \n", bracket_right);
+        ElementTex (tex, el_became, 0);
+
+        fprintf (tex, "$" sp);
     }
-
-    fprintf (tex, "$%s \\displaystyle\n", bracket_left);
-
-    ElementTex (tex, el_was, 0);
-    fprintf (tex, " %s = \n", bracket_right);
-    ElementTex (tex, el_became, 0);
-
-    fprintf (tex, "$" sp);
 
     #undef sp
     return;
