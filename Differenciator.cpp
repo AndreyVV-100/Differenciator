@@ -18,7 +18,8 @@ int main ()
 
     DiffFunction (&function, &differential);
     while (Simplifier (&(differential.head))) { ; }
-    CreateTex (nullptr, nullptr, 1);
+
+    CreateTex (function.head, differential.head, LAST_ITERATION);
     return 0;
 }
 
@@ -65,17 +66,19 @@ element* DiffBranch (element* el)
     if (el->type == NIL)
         return nullptr;
 
-    if (el->type == NUM)
-        return CR_N (0);
+    element* el_return = nullptr;
 
-    if (el->type == VAR)
-        return CR_N (1);
+    if (el->type == VAR || el->type == NUM)
+    {
+        double diff_num = (el->type == NUM) ? 0 : 1;
+        el_return = CR_N (diff_num);
+        CreateTex (el, el_return, DIFFERENTIAL);
+        return el_return;
+    }
 
     // d - derivative
     // c - copy
     // ToDo: denominator, numerator
-
-    element* el_return = nullptr;
 
     switch (el->symb)
     {
@@ -229,7 +232,7 @@ element* DiffBranch (element* el)
             break;
     }
 
-    CreateTex (el, el_return, 0);
+    CreateTex (el, el_return, DIFFERENTIAL);
 
     return el_return;
 }

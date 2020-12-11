@@ -294,7 +294,7 @@ const char* TypeCheck (Types type)
     }
 }
 
-void CreateTex (element* el_was, element* el_became, bool last_iteration)
+void CreateTex (element* el_was, element* el_became, TexingModes tex_mode)
 {
     // ToDo: functions
 
@@ -302,30 +302,27 @@ void CreateTex (element* el_was, element* el_became, bool last_iteration)
     if (!tex)
         return;
 
-    if (last_iteration)
+    if (tex_mode == LAST_ITERATION)
     {
-        char* ending = nullptr;
-        ReadTxt (&ending, "frases/ending.txt");
+        PrintFrase (tex, "frases/last.txt");
+        CreateTex (el_was, el_became, DIFFERENTIAL);
 
-        if (!ending)
-        {
-            fclose (tex);
-            return;
-        }
+        bool end_ok = PrintFrase (tex, "frases/ending.txt");
 
-        fprintf (tex, "%s", ending);
-        free (ending);
         fclose (tex);
         tex = nullptr;
 
-        system ("calltex Tree AllDumps");
+        if (end_ok)
+            system ("calltex>nul Tree AllDumps");
+
+        return;
     }
     
     if (!el_was || !el_became)
         return;
 
     static bool first_iteration = 1;
-    static Text text = {};
+    static Text frases = {};
     static int  shizi = 0;
     static Text count = {};
 
@@ -334,52 +331,21 @@ void CreateTex (element* el_was, element* el_became, bool last_iteration)
         first_iteration = 0;
         srand (time (nullptr));
 
-        char* intro = nullptr;
-        ReadTxt (&intro, "frases/intro.txt");
-        if (!intro)
-        {
-            fclose (tex);
+        if (!PrintFrase (tex, "frases/intro.txt"))
             return;
-        }
-
-        fprintf (tex, "%s", intro);
-        free (intro);
 
         ConstructorText (&count, "frases/count.txt");
-        ConstructorText (&text,  "frases/frases.txt");
+        ConstructorText (&frases,  "frases/frases.txt");
     }
-
-    // space
-    #define sp "\\\\\n"
 
     if (shizi < 10)
-    {
-        int rand_number = rand () % text.n_empty_lines;
-
-        if (shizi == 0)
-            fprintf (tex, sp "%s" sp, text.lines[rand_number].point);
-
-        if (shizi > 0 || rand_number == 0)
-        {
-            fprintf (tex, sp "%s" sp, count.lines[shizi].point);
-            shizi++;
-        }
-
-        fprintf (tex, "$\\Bigg(\\displaystyle\n");
-
-        ElementTex (tex, el_was, 0);
-        fprintf (tex, " \\Bigg)' = \n");
-        ElementTex (tex, el_became, 0);
-
-        fprintf (tex, "$" sp);
-    }
+        PrintChange (tex, &frases, &count, &shizi, el_was, el_became, tex_mode);
     else
         shizi--;
 
     if (shizi == 10)
         shizi = 0;
 
-    #undef sp
     return;
 }
 
@@ -504,4 +470,66 @@ void ElementTex (FILE* tex, element* el, bool need_brackets)
     }
 
     return;
+}
+
+void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi,
+                  element* el_was, element* el_became, TexingModes tex_mode)
+{
+    assert (shizi);
+    assert (el_was);
+    assert (el_became);
+
+    // space
+    #define sp "\\\\\n"
+
+    int rand_number = rand () % frases->n_empty_lines;
+
+    if (*shizi == 0)
+        fprintf (tex, sp "%s" sp, frases->lines[rand_number].point);
+
+    if (*shizi > 0 || rand_number == 0)
+    {
+        fprintf (tex, sp "%s" sp, count->lines[*shizi].point);
+        (*shizi)++;
+    }
+
+    char bracket_left[]  = "\\Bigg (";
+    char bracket_right[] = "\\Bigg)'";
+
+    if (tex_mode == SIMPLIFY)
+    {
+        bracket_left[0]  = '\0';
+        bracket_right[0] = '\0';
+    }
+
+    fprintf (tex, "$%s \\displaystyle\n", bracket_left);
+
+    ElementTex (tex, el_was, 0);
+    fprintf (tex, " %s = \n", bracket_right);
+    ElementTex (tex, el_became, 0);
+
+    fprintf (tex, "$" sp);
+
+    #undef sp
+    return;
+}
+
+bool PrintFrase (FILE* tex, const char* frase_place)
+{
+    assert (tex);
+    assert (frase_place);
+
+    char* frase = nullptr;
+    ReadTxt (&frase, frase_place);
+
+    if (!frase)
+    {
+        fclose (tex);
+        return 0;
+    }
+
+    fprintf (tex, "%s", frase);
+    free (frase);
+
+    return 1;
 }
