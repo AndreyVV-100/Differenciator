@@ -139,13 +139,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Calculator.cpp" />
     <ClCompile Include="Differenciator.cpp" />
     <ClCompile Include="InOut.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Tree.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Calculator.h" />
     <ClInclude Include="Differenciator.h" />
+    <ClInclude Include="FunctionsList.h" />
     <ClInclude Include="InOut.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Tree.h" />

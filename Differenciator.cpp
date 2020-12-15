@@ -13,7 +13,11 @@
 int main ()
 {
     Tree function = {};
-    ReadFunction (&function, "EqFiles/eq5.txt");
+    GetG ("EqFiles/eq5.txt", &function);
+
+    if (function.head == nullptr)
+        return 1;
+
     Tree differential = {};
 
     DiffFunction (&function, &differential);

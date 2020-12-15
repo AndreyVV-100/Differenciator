@@ -40,3 +40,5 @@ bool SimpleMul (element** el);
 bool SimpleDiv (element** el);
 
 bool SimplePow (element** el);
+
+void GetG (const char* file_path, Tree* tree);

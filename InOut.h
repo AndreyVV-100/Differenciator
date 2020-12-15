@@ -16,18 +16,6 @@ enum TexingModes
     LAST_ITERATION = 2
 };
 
-bool ReadFunction (Tree* func, const char* file_name);
-
-element* ReadElement (char** eq);
-
-void  SkipSpaces (char** eq);
-
-element* ReadVar (char** eq);
-
-element* ReadNum (char** eq);
-
-void    ReadOper (char** eq, element* elem);
-
 void CreateGraph (Tree* tree);
 
 void ElementGraph (FILE* graph, element* el);
@@ -42,3 +30,17 @@ bool PrintFrase (FILE* tex, const char* frase_place);
 
 void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi, 
                   element* el_was, element* el_became, TexingModes tex_mode);
+
+/*
+This is old code:
+
+bool ReadFunction (Tree* func, const char* file_name);
+
+element* ReadElement (char** eq);
+
+element* ReadVar (char** eq);
+
+element* ReadNum (char** eq);
+
+void    ReadOper (char** eq, element* elem);
+*/

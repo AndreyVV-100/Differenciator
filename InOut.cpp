@@ -17,217 +17,6 @@ const char* VAR_NAME  = "Variable";
 const char* NIL_NAME  = "Not determined";
 const char* ERR_NAME  = "Error!";
 
-bool ReadFunction (Tree* func, const char* file_name)
-{
-    assert (file_name);
-
-    char* equation = nullptr;
-    size_t num_symbols = ReadTxt (&equation, file_name);
-    
-    if (!equation)
-    {
-        printf ("Memory error.");
-        return 1;
-    }
-
-    char* equation_copy = equation;
-    SkipSpaces (&equation_copy);
-    func->head = ReadElement (&equation_copy);
-    if (func->head == nullptr)
-    {
-        printf ("The equation was poorly written.");
-        free (equation);
-        return 1;
-    }
-
-    free (equation);
-    return 0;
-}
-
-element* ReadElement (char** eq)
-{
-    assert (eq);
-    assert (*eq);
-
-    if (**eq != '(')
-    {
-        printf ("No open bracket:\n" "%s\n", *eq);
-        return nullptr;
-    }
-    *eq += 1;
-    SkipSpaces (eq);
-
-    element* el_ret = CR_O(NO_OP);
-
-    if (**eq == '(')
-    {
-        el_ret->left = ReadElement (eq);
-        if (el_ret->left == nullptr)
-        {
-            ElementDestructor (el_ret);
-            return nullptr;
-        }
-    }
-    else
-    {
-        el_ret->left = ReadVar (eq);
-        if (el_ret->left == nullptr)
-            el_ret->left = ReadNum (eq);
-    }
-
-    ReadOper (eq, el_ret);
-    if (el_ret->symb == NO_OP)
-    {
-        printf ("Bad operator.\n" "%s\n", *eq);
-        ElementDestructor (el_ret);
-        return nullptr;
-    }
-
-    SkipSpaces (eq);
-
-    if (**eq == '(')
-        el_ret->right = ReadElement (eq);
-    else
-    {
-        el_ret->right = ReadVar (eq);
-        if (el_ret->right == nullptr)
-            el_ret->right = ReadNum (eq);
-    }
-
-    SkipSpaces (eq);
-
-    if (el_ret->right == nullptr || **eq != ')')
-    {
-        printf ("Bad end.\n" "%s\n", *eq);
-        ElementDestructor (el_ret);
-        return nullptr;
-    }
-
-    *eq += 1;
-    return el_ret;
-}
-
-void  SkipSpaces (char** eq)
-{
-    assert (eq);
-    assert (*eq);
-
-    while (**eq == ' ' || **eq == '\t' || **eq == '\n' || **eq == '\r')
-        *eq += 1;
-
-    return;
-}
-
-element* ReadVar (char** eq)
-{
-    assert (eq);
-    assert (*eq);
-
-    char var = '\0';
-    size_t shift = 0;
-    sscanf (*eq, " %c%n", &var, &shift);
-
-    if (!var)
-        return nullptr;
-
-    // ToDo: List of vars, check all list
-    if (var != 'x')
-        return nullptr;
-
-    *eq += shift;
-    return CR_V (var);
-}
-
-element* ReadNum (char** eq)
-{
-    assert (eq);
-    assert (*eq);
-
-    double num = NAN;
-    size_t shift = 0;
-    sscanf (*eq, " %lf%n", &num, &shift);
-
-    *eq += shift;
-    return CR_N (num);
-}
-
-void    ReadOper (char** eq, element* elem)
-{
-    assert (elem);
-    assert (eq);
-    assert (*eq);
-
-    const size_t oper_size  = 16;
-    char    oper[oper_size] = "";
-    size_t shift = 0;
-
-    sscanf (*eq, " %s%n", oper, &shift);
-    *eq += shift;
-
-    switch (*oper)
-    {
-        case ADD:
-        case SUB:
-        case MUL:
-        case DIV:
-        case POW:
-            elem->symb = *oper;
-            return;
-
-        case 'a':
-            if (strcmp ("arcsin", oper) == 0)
-                elem->symb = ARCSIN;
-            else if (strcmp ("arccos", oper) == 0)
-                elem->symb = ARCCOS;
-            else if (strcmp ("arctg", oper) == 0)
-                elem->symb = ARCTG;
-            else if (strcmp ("arcctg", oper) == 0)
-                elem->symb = ARCCTG;
-            if (strcmp ("arcsh", oper) == 0)
-                elem->symb = ARCSH;
-            else if (strcmp ("arcch", oper) == 0)
-                elem->symb = ARCCH;
-            else if (strcmp ("arcth", oper) == 0)
-                elem->symb = ARCTH;
-            else if (strcmp ("arccth", oper) == 0)
-                elem->symb = ARCCTH;
-            return;
-
-        case 'c':
-            if (strcmp ("cos", oper) == 0)
-                elem->symb = COS;
-            else if (strcmp ("ch", oper) == 0)
-                elem->symb = CH;
-            else if (strcmp ("ctg", oper) == 0)
-                elem->symb = CTG;
-            else if (strcmp ("cth", oper) == 0)
-                elem->symb = CTH;
-            return;
-
-        case 'l':
-            if (strcmp ("ln", oper) == 0)
-                elem->symb = LN;
-            return;
-
-        case 's':
-            if (strcmp ("sin", oper) == 0)
-                elem->symb = SIN;
-            else if (strcmp ("sh", oper) == 0)
-                elem->symb = SH;
-            return;
-
-        case 't':
-            if (strcmp ("tg", oper) == 0)
-                elem->symb = TG;
-            else if (strcmp ("tg", oper) == 0)
-                elem->symb = CH;
-            return;
-
-        default:
-            return;
-    }
-}
-
 void CreateGraph (Tree* tree)
 {
     assert (tree);
@@ -507,13 +296,13 @@ void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi,
             bracket_right[0] = '\0';
         }
 
-        fprintf (tex, "$%s \\displaystyle\n", bracket_left);
+        fprintf (tex, "\\begin{equation} %s \\displaystyle\n", bracket_left);
 
         ElementTex (tex, el_was, 0);
-        fprintf (tex, " %s = \n", bracket_right);
+        fprintf (tex, "%s = \n", bracket_right);
         ElementTex (tex, el_became, 0);
 
-        fprintf (tex, "$" sp);
+        fprintf (tex, "\\end{equation}" sp);
     }
 
     #undef sp
@@ -539,3 +328,207 @@ bool PrintFrase (FILE* tex, const char* frase_place)
 
     return 1;
 }
+
+/*
+This is old code:
+
+bool ReadFunction (Tree* func, const char* file_name)
+{
+    assert (file_name);
+
+    char* equation = nullptr;
+    size_t num_symbols = ReadTxt (&equation, file_name);
+
+    if (!equation)
+    {
+        printf ("Memory error.");
+        return 1;
+    }
+
+    char* equation_copy = equation;
+    SkipSpaces (&equation_copy);
+    func->head = ReadElement (&equation_copy);
+    if (func->head == nullptr)
+    {
+        printf ("The equation was poorly written.");
+        free (equation);
+        return 1;
+    }
+
+    free (equation);
+    return 0;
+}
+
+element* ReadElement (char** eq)
+{
+    assert (eq);
+    assert (*eq);
+
+    if (**eq != '(')
+    {
+        printf ("No open bracket:\n" "%s\n", *eq);
+        return nullptr;
+    }
+    *eq += 1;
+    SkipSpaces (eq);
+
+    element* el_ret = CR_O(NO_OP);
+
+    if (**eq == '(')
+    {
+        el_ret->left = ReadElement (eq);
+        if (el_ret->left == nullptr)
+        {
+            ElementDestructor (el_ret);
+            return nullptr;
+        }
+    }
+    else
+    {
+        el_ret->left = ReadVar (eq);
+        if (el_ret->left == nullptr)
+            el_ret->left = ReadNum (eq);
+    }
+
+    ReadOper (eq, el_ret);
+    if (el_ret->symb == NO_OP)
+    {
+        printf ("Bad operator.\n" "%s\n", *eq);
+        ElementDestructor (el_ret);
+        return nullptr;
+    }
+
+    SkipSpaces (eq);
+
+    if (**eq == '(')
+        el_ret->right = ReadElement (eq);
+    else
+    {
+        el_ret->right = ReadVar (eq);
+        if (el_ret->right == nullptr)
+            el_ret->right = ReadNum (eq);
+    }
+
+    SkipSpaces (eq);
+
+    if (el_ret->right == nullptr || **eq != ')')
+    {
+        printf ("Bad end.\n" "%s\n", *eq);
+        ElementDestructor (el_ret);
+        return nullptr;
+    }
+
+    *eq += 1;
+    return el_ret;
+}
+
+element* ReadVar (char** eq)
+{
+    assert (eq);
+    assert (*eq);
+
+    char var = '\0';
+    size_t shift = 0;
+    sscanf (*eq, " %c%n", &var, &shift);
+
+    if (!var)
+        return nullptr;
+
+    // ToDo: List of vars, check all list
+    if (var != 'x')
+        return nullptr;
+
+    *eq += shift;
+    return CR_V (var);
+}
+
+element* ReadNum (char** eq)
+{
+    assert (eq);
+    assert (*eq);
+
+    double num = NAN;
+    size_t shift = 0;
+    sscanf (*eq, " %lf%n", &num, &shift);
+
+    *eq += shift;
+    return CR_N (num);
+}
+
+void    ReadOper (char** eq, element* elem)
+{
+    assert (elem);
+    assert (eq);
+    assert (*eq);
+
+    const size_t oper_size  = 16;
+    char    oper[oper_size] = "";
+    size_t shift = 0;
+
+    sscanf (*eq, " %s%n", oper, &shift);
+    *eq += shift;
+
+    switch (*oper)
+    {
+        case ADD:
+        case SUB:
+        case MUL:
+        case DIV:
+        case POW:
+            elem->symb = *oper;
+            return;
+
+        case 'a':
+            if (strcmp ("arcsin", oper) == 0)
+                elem->symb = ARCSIN;
+            else if (strcmp ("arccos", oper) == 0)
+                elem->symb = ARCCOS;
+            else if (strcmp ("arctg", oper) == 0)
+                elem->symb = ARCTG;
+            else if (strcmp ("arcctg", oper) == 0)
+                elem->symb = ARCCTG;
+            if (strcmp ("arcsh", oper) == 0)
+                elem->symb = ARCSH;
+            else if (strcmp ("arcch", oper) == 0)
+                elem->symb = ARCCH;
+            else if (strcmp ("arcth", oper) == 0)
+                elem->symb = ARCTH;
+            else if (strcmp ("arccth", oper) == 0)
+                elem->symb = ARCCTH;
+            return;
+
+        case 'c':
+            if (strcmp ("cos", oper) == 0)
+                elem->symb = COS;
+            else if (strcmp ("ch", oper) == 0)
+                elem->symb = CH;
+            else if (strcmp ("ctg", oper) == 0)
+                elem->symb = CTG;
+            else if (strcmp ("cth", oper) == 0)
+                elem->symb = CTH;
+            return;
+
+        case 'l':
+            if (strcmp ("ln", oper) == 0)
+                elem->symb = LN;
+            return;
+
+        case 's':
+            if (strcmp ("sin", oper) == 0)
+                elem->symb = SIN;
+            else if (strcmp ("sh", oper) == 0)
+                elem->symb = SH;
+            return;
+
+        case 't':
+            if (strcmp ("tg", oper) == 0)
+                elem->symb = TG;
+            else if (strcmp ("th", oper) == 0)
+                elem->symb = TH;
+            return;
+
+        default:
+            return;
+    }
+}
+*/

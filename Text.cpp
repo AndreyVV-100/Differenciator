@@ -128,3 +128,14 @@ int DoLines(char* text, Line* lines, int num_lines)
 	assert(num_lines > 0);
 	return num_lines;
 }
+
+void  SkipSpaces (char** eq)
+{
+	assert (eq);
+	assert (*eq);
+
+	while (**eq == ' ' || **eq == '\t' || **eq == '\r')
+		*eq += 1;
+
+	return;
+}

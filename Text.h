@@ -66,3 +66,5 @@ int CountSymbols (char* text, const char str);
 */
 
 int DoLines (char* text, Line* lines, int num_lines);
+
+void  SkipSpaces (char** eq);
