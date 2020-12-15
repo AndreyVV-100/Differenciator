@@ -1,5 +1,5 @@
-#define dL DiffBranch (el->left)
-#define dR DiffBranch (el->right)
+#define dL DiffBranch (el->left,  vars, diff_var)
+#define dR DiffBranch (el->right, vars, diff_var)
 #define cL CopyBranch (el->left)
 #define cR CopyBranch (el->right)
 #define Un UnionBranches
@@ -21,11 +21,11 @@
                           elem = new_elem;                      \
                           return 1; }
 
-void DiffFunction (Tree* func, Tree* diff);
+void DiffFunction (Tree* func, Tree* diff, double* vars, const char diff_var);
 
 element* CopyBranch (element* el);
 
-element* DiffBranch (element* el);
+element* DiffBranch (element* el, double* vars, const char diff_var);
 
 element* UnionBranches (char oper, element* el_left, element* el_right);
 
@@ -41,4 +41,4 @@ bool SimpleDiv (element** el);
 
 bool SimplePow (element** el);
 
-void GetG (const char* file_path, Tree* tree);
+void GetG (const char* file_path, Tree* tree, double* vars);

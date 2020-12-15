@@ -13,21 +13,23 @@
 int main ()
 {
     Tree function = {};
-    GetG ("EqFiles/eq5.txt", &function);
+
+    double vars['z' - 'a' + 1] = {};
+    GetG ("EqFiles/eq5.txt", &function, vars);
 
     if (function.head == nullptr)
         return 1;
 
     Tree differential = {};
 
-    DiffFunction (&function, &differential);
+    DiffFunction (&function, &differential, vars, 'x');
     while (Simplifier (&(differential.head))) { ; }
 
     CreateTex (function.head, differential.head, LAST_ITERATION);
     return 0;
 }
 
-void DiffFunction (Tree* func, Tree* diff)
+void DiffFunction (Tree* func, Tree* diff, double* vars, const char diff_var)
 {
     assert (func);
     assert (diff);
@@ -35,7 +37,7 @@ void DiffFunction (Tree* func, Tree* diff)
     TreeDestructor  (diff);
     TreeConstructor (diff);
 
-    diff->head = DiffBranch (func->head);
+    diff->head = DiffBranch (func->head, vars, diff_var);
     return;
 }
 
@@ -63,7 +65,7 @@ element* CopyBranch (element* el)
     return el_ret;
 }
 
-element* DiffBranch (element* el)
+element* DiffBranch (element* el, double* vars, const char diff_var)
 {
     assert (el);
 
@@ -74,7 +76,7 @@ element* DiffBranch (element* el)
 
     if (el->type == VAR || el->type == NUM)
     {
-        double diff_num = (el->type == NUM) ? 0 : 1;
+        double diff_num = (el->type == VAR && el->symb == diff_var) ? 1 : 0;
         el_return = CR_N (diff_num);
         CreateTex (el, el_return, DIFFERENTIAL);
         return el_return;
@@ -128,7 +130,7 @@ element* DiffBranch (element* el)
 
                 element ln_left   = { OPER, nullptr,   el->left, NAN, LN };
                 element hard_diff = { OPER, el->right, &ln_left, NAN, MUL };
-                coeff = DiffBranch (&hard_diff);
+                coeff = DiffBranch (&hard_diff, vars, diff_var);
             }
 
             el_return = Un (MUL, coeff, power);

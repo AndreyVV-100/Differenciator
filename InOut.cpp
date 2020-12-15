@@ -85,8 +85,6 @@ const char* TypeCheck (Types type)
 
 void CreateTex (element* el_was, element* el_became, TexingModes tex_mode)
 {
-    // ToDo: functions
-
     static FILE* tex = fopen ("AllDumps/Tree.tex", "w");
     if (!tex)
         return;
@@ -102,7 +100,7 @@ void CreateTex (element* el_was, element* el_became, TexingModes tex_mode)
         tex = nullptr;
 
         if (end_ok)
-            system ("calltex>nul Tree AllDumps");
+            system ("calltex Tree AllDumps");
 
         return;
     }
@@ -138,7 +136,7 @@ void CreateTex (element* el_was, element* el_became, TexingModes tex_mode)
     return;
 }
 
-void ElementTex (FILE* tex, element* el, bool need_brackets)
+void ElementTex (FILE* tex, element* el, bool need_brackets, char* repl_name)
 {
     assert (tex);
     if (!el || el->type == NIL)
@@ -156,10 +154,17 @@ void ElementTex (FILE* tex, element* el, bool need_brackets)
         return;
     }
 
+    if (el->num == REPLACEMENT)
+    {
+        fprintf (tex, "%c", *repl_name);
+        *repl_name += 1;
+        return;
+    }
+
     switch (el->symb)
     {
-        #define TexL(need) ElementTex (tex, el->left,  need)
-        #define TexR(need) ElementTex (tex, el->right, need)
+        #define TexL(need) ElementTex (tex, el->left,  need, repl_name)
+        #define TexR(need) ElementTex (tex, el->right, need, repl_name)
 
         #define priority(elem, bracket) if (elem->type == OPER)     \
                                             fprintf (tex, bracket)
@@ -287,6 +292,11 @@ void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi,
 
     if (*shizi < 11)
     {
+        bool need_replacement = 0;
+        size_t num_was    = DefineReplacement (el_was   , &need_replacement);
+        size_t num_became = DefineReplacement (el_became, &need_replacement);
+        char repl_name = 'A';
+
         char bracket_left[] = "\\Bigg (";
         char bracket_right[] = "\\Bigg)'";
 
@@ -298,14 +308,22 @@ void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi,
 
         fprintf (tex, "\\begin{equation} %s \\displaystyle\n", bracket_left);
 
-        ElementTex (tex, el_was, 0);
+        ElementTex (tex, el_was,    0, &repl_name);
         fprintf (tex, "%s = \n", bracket_right);
-        ElementTex (tex, el_became, 0);
+        ElementTex (tex, el_became, 0, &repl_name);
 
-        fprintf (tex, "\\end{equation}" sp);
+        fprintf (tex, "\\end{equation}");
+
+// This is strange thing. It's print gde (on Russian) in Tex. There are problems with CP1251 in VS.
+
+        if (need_replacement)
+        {
+            fprintf (tex, sp ", %c%c%c%c%c%c" sp, 208, 179, 208, 180, 208, 181);
+            repl_name = 'A';
+            PrintReplacements (tex, el_was,    &repl_name);
+            PrintReplacements (tex, el_became, &repl_name);
+        }
     }
-
-    #undef sp
     return;
 }
 
@@ -327,6 +345,55 @@ bool PrintFrase (FILE* tex, const char* frase_place)
     free (frase);
 
     return 1;
+}
+
+size_t DefineReplacement (element* el, bool *need_repl)
+{
+    if (!el)
+        return 0;
+
+    if (el->type == VAR || el->type == NUM)
+        return 1;
+
+    const size_t repl_size = 10;
+    size_t  left_size = DefineReplacement (el->left , need_repl);
+    size_t right_size = DefineReplacement (el->right, need_repl);
+
+    if (left_size < repl_size && right_size < repl_size && left_size + right_size >= repl_size)
+    {
+        *need_repl = 1;
+        el->num = REPLACEMENT;
+        return 1;
+    }
+
+    if (el->symb == POW)
+        return left_size;
+
+    return left_size + right_size;
+}
+
+void PrintReplacements (FILE* tex, element* el, char* repl_name)
+{
+    assert (tex);
+    assert (repl_name);
+    if (!el)
+        return;
+
+    if (el->type == OPER && el->num == REPLACEMENT)
+    {
+        el->num = NAN;
+        fprintf (tex, " $$ %c = " sp, *repl_name);
+        *repl_name += 1;
+        char tex_dont_change_repl_name = *repl_name;
+        ElementTex (tex, el, 0, &tex_dont_change_repl_name);
+        fprintf (tex, " $$" sp);
+    }
+    
+    PrintReplacements (tex, el->left,  repl_name);
+    PrintReplacements (tex, el->right, repl_name);
+
+    #undef sp
+    return;
 }
 
 /*

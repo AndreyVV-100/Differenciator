@@ -17,7 +17,7 @@ bool Require_F (char** eq, char symb)
 	return 1;
 }
 
-void GetG (const char* file_path, Tree* tree)
+void GetG (const char* file_path, Tree* tree, double* vars)
 {
 	char* equation = nullptr;
 	ReadTxt (&equation, file_path);
@@ -25,7 +25,6 @@ void GetG (const char* file_path, Tree* tree)
 		return;
 	
 	char* eq = equation;
-	double vars['z' - 'a' + 1] = {};
 
 	for (size_t i_var = 0; i_var <= 'z' - 'a'; i_var++)
 		vars[i_var] = NAN;

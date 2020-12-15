@@ -19,7 +19,7 @@
 
 bool Require_F (char** eq, char symb);
 
-void GetG (const char* file_path, Tree* tree);
+void GetG (const char* file_path, Tree* tree, double* vars);
 
 bool GetVarDefine (char** eq, double* vars);
 
