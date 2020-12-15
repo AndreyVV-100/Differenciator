@@ -83,7 +83,7 @@ const char* TypeCheck (Types type)
     }
 }
 
-void CreateTex (element* el_was, element* el_became, TexingModes tex_mode)
+void CreateTex (element* el_was, element* el_became, TexingModes tex_mode, const char diff_var)
 {
     static FILE* tex = fopen ("AllDumps/Tree.tex", "w");
     if (!tex)
@@ -92,7 +92,7 @@ void CreateTex (element* el_was, element* el_became, TexingModes tex_mode)
     if (tex_mode == LAST_ITERATION)
     {
         PrintFrase (tex, "frases/last.txt");
-        CreateTex (el_was, el_became, DIFFERENTIAL);
+        CreateTex (el_was, el_became, DIFFERENTIAL, diff_var);
 
         bool end_ok = PrintFrase (tex, "frases/ending.txt");
 
@@ -126,7 +126,7 @@ void CreateTex (element* el_was, element* el_became, TexingModes tex_mode)
     }
 
     if (shizi < 10)
-        PrintChange (tex, &frases, &count, &shizi, el_was, el_became, tex_mode);
+        PrintChange (tex, &frases, &count, &shizi, el_was, el_became, tex_mode, diff_var);
     else
         shizi--;
 
@@ -267,23 +267,23 @@ void ElementTex (FILE* tex, element* el, bool need_brackets, char* repl_name)
 }
 
 void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi,
-                  element* el_was, element* el_became, TexingModes tex_mode)
+                  element* el_was, element* el_became, TexingModes tex_mode, const char diff_var)
 {
     assert (shizi);
     assert (el_was);
     assert (el_became);
 
     // space
-    #define sp "\\\\\n"
+    #define NL "\\\\\n"
 
     int rand_number = rand () % frases->n_empty_lines;
 
     if (*shizi == 0)
-        fprintf (tex, sp "%s" sp, frases->lines[rand_number].point);
+        fprintf (tex, NL "%s" NL, frases->lines[rand_number].point);
 
     if ((*shizi > 0 || rand_number == 0) && *shizi < 11)
     {
-        fprintf (tex, sp "%s" sp, count->lines[*shizi].point);
+        fprintf (tex, NL "%s" NL, count->lines[*shizi].point);
         (*shizi)++;
     }
 
@@ -297,28 +297,23 @@ void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi,
         size_t num_became = DefineReplacement (el_became, &need_replacement);
         char repl_name = 'A';
 
-        char bracket_left[] = "\\Bigg (";
-        char bracket_right[] = "\\Bigg)'";
+        fprintf (tex, "\\begin{equation} \\displaystyle\n");
 
-        if (tex_mode == SIMPLIFY)
-        {
-            bracket_left[0] = '\0';
-            bracket_right[0] = '\0';
-        }
-
-        fprintf (tex, "\\begin{equation} %s \\displaystyle\n", bracket_left);
+        if (tex_mode == DIFFERENTIAL)
+            fprintf (tex, " \\frac{\\partial}{\\partial %c} \\cdot ", diff_var);
 
         ElementTex (tex, el_was,    0, &repl_name);
-        fprintf (tex, "%s = \n", bracket_right);
+        fprintf (tex, " = \n");
         ElementTex (tex, el_became, 0, &repl_name);
 
         fprintf (tex, "\\end{equation}");
 
-// This is strange thing. It's print gde (on Russian) in Tex. There are problems with CP1251 in VS.
-
         if (need_replacement)
         {
-            fprintf (tex, sp ", %c%c%c%c%c%c" sp, 208, 179, 208, 180, 208, 181);
+            fprintf (tex, NL);
+            fputws  (L"где:", tex);
+            fprintf (tex, NL);
+
             repl_name = 'A';
             PrintReplacements (tex, el_was,    &repl_name);
             PrintReplacements (tex, el_became, &repl_name);
@@ -382,17 +377,17 @@ void PrintReplacements (FILE* tex, element* el, char* repl_name)
     if (el->type == OPER && el->num == REPLACEMENT)
     {
         el->num = NAN;
-        fprintf (tex, " $$ %c = " sp, *repl_name);
+        fprintf (tex, " $$ %c = " NL, *repl_name);
         *repl_name += 1;
         char tex_dont_change_repl_name = *repl_name;
         ElementTex (tex, el, 0, &tex_dont_change_repl_name);
-        fprintf (tex, " $$" sp);
+        fprintf (tex, " $$" NL);
     }
     
     PrintReplacements (tex, el->left,  repl_name);
     PrintReplacements (tex, el->right, repl_name);
 
-    #undef sp
+    #undef NL
     return;
 }
 

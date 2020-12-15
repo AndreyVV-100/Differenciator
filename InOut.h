@@ -24,14 +24,14 @@ void ElementGraph (FILE* graph, element* el);
 
 const char* TypeCheck (Types type);
 
-void CreateTex (element* el_was, element* el_became, TexingModes tex_mode);
+void CreateTex (element* el_was, element* el_became, TexingModes tex_mode, const char diff_var);
 
 void ElementTex (FILE* tex, element* el, bool need_brackets, char* repl_name);
 
 bool PrintFrase (FILE* tex, const char* frase_place);
 
 void PrintChange (FILE* tex, Text* frases, Text* count, int* shizi, 
-                  element* el_was, element* el_became, TexingModes tex_mode);
+                  element* el_was, element* el_became, TexingModes tex_mode, const char diff_var);
 
 size_t DefineReplacement (element* el, bool* need_repl);
 

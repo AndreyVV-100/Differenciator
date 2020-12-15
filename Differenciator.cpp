@@ -2,6 +2,7 @@
 #include "Differenciator.h"
 #include "InOut.h"
 #include "Text.h"
+#include <locale.h>
 
 #pragma warning (disable : 26451)
 /*
@@ -12,7 +13,10 @@
 
 int main ()
 {
+    _wsetlocale (LC_ALL, L".utf8");
+
     Tree function = {};
+    const char diff_var = 'x';
 
     double vars['z' - 'a' + 1] = {};
     GetG ("EqFiles/eq5.txt", &function, vars);
@@ -22,10 +26,10 @@ int main ()
 
     Tree differential = {};
 
-    DiffFunction (&function, &differential, vars, 'x');
+    DiffFunction (&function, &differential, vars, diff_var);
     while (Simplifier (&(differential.head))) { ; }
 
-    CreateTex (function.head, differential.head, LAST_ITERATION);
+    CreateTex (function.head, differential.head, LAST_ITERATION, diff_var);
     return 0;
 }
 
@@ -78,7 +82,7 @@ element* DiffBranch (element* el, double* vars, const char diff_var)
     {
         double diff_num = (el->type == VAR && el->symb == diff_var) ? 1 : 0;
         el_return = CR_N (diff_num);
-        CreateTex (el, el_return, DIFFERENTIAL);
+        CreateTex (el, el_return, DIFFERENTIAL, diff_var);
         return el_return;
     }
 
@@ -238,7 +242,7 @@ element* DiffBranch (element* el, double* vars, const char diff_var)
             break;
     }
 
-    CreateTex (el, el_return, DIFFERENTIAL);
+    CreateTex (el, el_return, DIFFERENTIAL, diff_var);
 
     return el_return;
 }

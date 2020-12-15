@@ -8,17 +8,17 @@
 #define L (elem->left)
 #define R (elem->right)
 
-#define move_branch(what)  { CreateTex (elem, elem->what, SIMPLIFY); \
-                             element* el_del = elem;                 \
-                             elem = elem->what;                      \
-                             el_del->what = nullptr;                 \
-                             ElementDestructor (el_del);             \
+#define move_branch(what)  { CreateTex (elem, elem->what, SIMPLIFY, '\0'); \
+                             element* el_del = elem;                       \
+                             elem = elem->what;                            \
+                             el_del->what = nullptr;                       \
+                             ElementDestructor (el_del);                   \
                              return 1;  }
 
-#define num_branch(num) { element* new_elem = CR_N (num);       \
-                          CreateTex (elem, new_elem, SIMPLIFY); \
-                          ElementDestructor (elem);             \
-                          elem = new_elem;                      \
+#define num_branch(num) { element* new_elem = CR_N (num);             \
+                          CreateTex (elem, new_elem, SIMPLIFY, '\0'); \
+                          ElementDestructor (elem);                   \
+                          elem = new_elem;                            \
                           return 1; }
 
 void DiffFunction (Tree* func, Tree* diff, double* vars, const char diff_var);
